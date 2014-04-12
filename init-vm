@@ -1,0 +1,62 @@
+#!/bin/bash
+
+#
+# Add repositories. Alternatively you can add local repos from DVD or iso files. Depending on your building server. The important thing is that you have access to these so can fetch all build requirements.
+# If you dont already have these repos in your environment them you can download the DVD ISOs from http://download.suse.com/ 
+#
+
+zypper ar nfs://XXXXXXXX/install/sles11.2-x86_64-1 SLES11.2
+zypper ar nfs://XXXXXXXX/install/sles11.2-sdk/x86_64 SLES11.2-SDK
+zypper ar nfs://XXXXXXXX/install/sled11.2-x86_64-1 SLED11.2
+
+#
+# install all build requirements
+#
+zypper install -y autoconf gdbm-devel ncurses-devel db43-devel openssl-devel readline-devel zlib-devel
+zypper install -y libselinux-devel pkgconfig libxml2-devel
+zypper install -y ant jpackage-utils ant-nodeps xerces-j2 xml-commons-apis java-1_6_0-ibm-devel
+zypper install -y ant-junit automake alsa-lib-devel cups-devel giflib-devel
+zypper install -y java-1_6_0-openjdk-devel gcc-c++ freetype2-devel xorg-x11-libX11-devel xorg-x11-libXt-devel xorg-x11-libXext-devel xorg-x11-devel xorg-x11-libXrender-devel libjpeg-devel libpng-devel xorg-x11-proto-devel jakarta-commons-logging
+zypper install -y bison flex libxslt-devel pam-devel openldap2-devel
+zypper install -y libapr1-devel libapr-util1-devel libexpat-devel pcre-devel
+zypper install -y curl-devel mysql-devel libxslt-devel
+zypper install -y sqlite-devel
+
+#
+# You need to create a RPM like this yourself. The Puppet binary is not GPL license so you cant use the one from Puppetlabs.
+#
+rpm -ivh extra/lu-puppet-enterprise-release-1.0-20140320.noarch.rpm
+
+# just to avoid the annoying warnigs
+groupadd mockbuild
+useradd mockbuild
+
+#
+# I could not find the uuid-devel and libossp libraries anywhere on SLES 11 or SLED 11 DVDs, so I had to grab some binaries off SUSE's build service. If you find a better solution for this then please let me know.
+#
+# Download uuid-devel and related requirements from here:
+# https://build.opensuse.org/package/show/home:pronik:branches:server:database:postgresql/uuid
+#
+#   2875eb8305a6f7e2f3979bf438b479bd  uuid-devel-1.6.2-48.1.x86_64.rpm
+#   d846e1ba56b4f57c84fb6c175fab9bc3  libossp-uuid_dce16-1.6.2-48.1.x86_64.rpm
+#   69096358e80cd233d70ce62e87bfbd73  libossp-uuid16-1.6.2-48.1.x86_64.rpm
+#   59ce9e8ca9d11120949a7bd06c3c9d5b  libossp-uuid++16-1.6.2-48.1.x86_64.rpm
+#
+
+cd extra
+rpm -ivh uuid-devel-1.6.2-48.1.x86_64.rpm libossp-uuid_dce16-1.6.2-48.1.x86_64.rpm libossp-uuid16-1.6.2-48.1.x86_64.rpm libossp-uuid++16-1.6.2-48.1.x86_64.rpm
+cd -
+
+#
+# Install all source RPMs. These were downloaded from http://downloads.puppetlabs.com/enterprise/sources/3.1.2/sles/11/SRPMS/. See other file for md5 checksums.
+#
+rpm -ivh srpms/*.src.rpm
+
+#
+# (optional) if its not important to you which UID+GID are assigned then leave this out
+# ugly hack to ensure that pe-puppet UID and GID always get fixed values
+#  UID pe-puppet = 31009
+#  GID pe-puppet = 50004
+
+sed -i -e 's/useradd -r -g/useradd -r -u 31009 -g/' -e 's/groupadd -r /groupadd -r -g 50004 /' /usr/src/packages/SPECS/pe-puppet.spec || { echo "sed for useradd failed" ; exit 1 ; }
+

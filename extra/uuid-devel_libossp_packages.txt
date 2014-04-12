@@ -1,0 +1,4 @@
+https://build.opensuse.org/package/show/home:pronik:branches:server:database:postgresql/uuid
+
+Download uuid-devel and related requirements from here.
+
