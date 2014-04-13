@@ -1,0 +1,25 @@
+#!/bin/bash
+set -o pipefail
+
+sed -i -e 's/^enabled=1/enabled=0/' /etc/yum/pluginconf.d/fastestmirror.conf
+
+rpm -ivh srpms/*.rpm
+
+yum install -y java-1.6.0-openjdk-devel libX11-devel libXrender-devel libXext-devel libXi-devel libXp-devel libXt-devel libXtst-devel libXinerama-devel xorg-x11-proto-devel zip libxslt-devel openldap-devel jakarta-commons-logging ant ant-nodeps ant-junit xerces-j2 xml-commons-apis java-javadoc mysql-devel
+
+
+rpm -Uvh ../extra/autoconf-2.65-1rt.x86_64.rpm
+
+tar xzf ../extra/m4-1.4.17.tar.gz -C /tmp
+cd /tmp/m4-1.4.17
+./configure --prefix=/usr/local && make && make install
+cd -
+
+mv /usr/bin/m4 /usr/bin/m4.orig
+ln -s /usr/local/bin/m4 /usr/bin/m4
+
+# fix bug in pe-puppet.spec, when compiling on CentOS
+cp ../extra/dot.rpmmacros /root/.rpmmacros
+sed -i -e 's/^%global p_vendor       pe/%global p_vendor       pe\n%global rhel           5/' /usr/src/redhat/SPECS/pe-puppet.spec
+sed -i -e 's/^%global _name     ruby/%global _name     ruby\n%global _missing_doc_files_terminate_build 0\n%global _unpackaged_files_terminate_build  0/' /usr/src/redhat/SPECS/pe-ruby.spec
+

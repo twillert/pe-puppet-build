@@ -1,0 +1,68 @@
+#!/bin/bash -e
+
+set -o pipefail
+
+skip="true"
+
+loop_packages() {
+	echo
+	echo "=== $i ==="
+	specfile=$1
+        name=`echo $1 | perl -ane 's/\.spec//; print'`
+	echo "n: $name s: $specfile"
+
+        rpm -qa | grep -E ^"${name}-[0-9]" && [[ $skip -eq "true" ]] && echo "-- skipping $name" && continue
+
+        echo "-- building"
+	out=`rpmbuild -bb /usr/src/redhat/SPECS/${specfile} | perl -lane 'print $1, if m/^Wrote: (.*\.rpm)$/'`
+	echo "-- installing binary package(s)"
+	rpm -ivh --replacepkgs $out
+
+}
+
+list="
+pe-libyaml.spec
+pe-augeas.spec
+pe-ruby.spec
+pe-facter.spec
+pe-bundler.spec
+pe-ruby-rgen.spec
+pe-ruby-shadow.spec
+pe-puppet.spec
+pe-rubygem-deep-merge.spec
+pe-hiera.spec
+pe-java.spec
+pe-tanukiwrapper.spec
+pe-activemq.spec
+pe-libevent.spec
+pe-ruby-stomp.spec
+pe-mcollective.spec
+pe-ruby-augeas.spec
+pe-rubygem-activesupport.spec
+pe-rubygem-activerecord.spec
+pe-rubygem-builder.spec
+pe-rubygem-excon.spec
+pe-rubygem-formatador.spec
+pe-rubygem-mime-types.spec
+pe-rubygem-guid.spec
+pe-rubygem-multi-json.spec
+pe-rubygem-net-ssh.spec
+pe-rubygem-net-scp.spec
+pe-rubygem-nokogiri.spec
+pe-rubygem-rack.spec
+pe-rubygem-rbvmomi.spec
+pe-rubygem-ruby-hmac.spec
+pe-rubygem-sequel.spec
+pe-rubygem-trollop.spec
+pe-ruby-ldap.spec
+pe-ruby-mysql.spec
+pe-rubygem-fog.spec
+"
+for i in $list
+do
+	loop_packages $i
+done
+
+
+exit
+
