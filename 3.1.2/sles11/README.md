@@ -4,9 +4,9 @@ Puppetlabs are providing source RPMs for those part of their Puppet Enterprise s
 
 ## Building Instructions
 
-* You need a SLES 11.2 server to build on. A temporary server will work fine, I spun up a Vagrant instance. You need 2GB or more of RAM. Else pe-java might have problems building.
+* You need a SLES 11.2 server to build on. A temporary server will work fine, I spun up a Vagrant instance. You need 2GB or more of RAM. Else pe-java might have problems building. The build process include installing the new RPMs as they partially require each other to build. This is one more argument for building on a temporary server.
 
-* Download the source RPMs from http://downloads.puppetlabs.com/enterprise/sources/3.1.2/sles/11/SRPMS/ . Put them all into the "srpms" directory. I have provided md5 checksum from my downloads.
+* Download the source RPMs from http://downloads.puppetlabs.com/enterprise/sources/3.1.2/sles/11/SRPMS/ . Put them all into the "srpms" directory. I have provided md5 checksum from my downloads. Notice that for some RPMs they are several versions on the Puppetlabs download server, so only pick the one you want to build.
 
 * Satisfy all build requirements by executing 'init-vm'. Depending on your SLES 11.2 you may have some of the packages installed already. Also your environment might look different so you have to adjust the lines regarding the repositories.
 

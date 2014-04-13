@@ -1,13 +1,13 @@
-#!/bin/bash
+#!/bin/bash -e
 
 #
 # Add repositories. Alternatively you can add local repos from DVD or iso files. Depending on your building server. The important thing is that you have access to these so can fetch all build requirements.
 # If you dont already have these repos in your environment them you can download the DVD ISOs from http://download.suse.com/ 
 #
 
-zypper ar nfs://XXXXXXXX/install/sles11.2-x86_64-1 SLES11.2
-zypper ar nfs://XXXXXXXX/install/sles11.2-sdk/x86_64 SLES11.2-SDK
-zypper ar nfs://XXXXXXXX/install/sled11.2-x86_64-1 SLED11.2
+zypper ar nfs://ezszis5a/install/sles11.2-x86_64-1 SLES11.2
+zypper ar nfs://ezszis5a/install/sles11.2-sdk/x86_64 SLES11.2-SDK
+zypper ar nfs://ezszis5a/install/sled11.2-x86_64-1 SLED11.2
 
 #
 # install all build requirements
@@ -25,7 +25,7 @@ zypper install -y sqlite-devel
 #
 # You need to create a RPM like this yourself. The Puppet binary is not GPL license so you cant use the one from Puppetlabs.
 #
-rpm -ivh extra/lu-puppet-enterprise-release-1.0-20140320.noarch.rpm
+rpm -ivh ../extra/lu-puppet-enterprise-release-1.0-20140320.noarch.rpm
 
 # just to avoid the annoying warnigs
 groupadd mockbuild
@@ -43,7 +43,7 @@ useradd mockbuild
 #   59ce9e8ca9d11120949a7bd06c3c9d5b  libossp-uuid++16-1.6.2-48.1.x86_64.rpm
 #
 
-cd extra
+cd ../extra
 rpm -ivh uuid-devel-1.6.2-48.1.x86_64.rpm libossp-uuid_dce16-1.6.2-48.1.x86_64.rpm libossp-uuid16-1.6.2-48.1.x86_64.rpm libossp-uuid++16-1.6.2-48.1.x86_64.rpm
 cd -
 

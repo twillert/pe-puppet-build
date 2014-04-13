@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 # Very simple script to build the Puppet Enterprise stack on SLES11.
-# You need to have a RPM which satisfy the dependcy "pe-puppet-enterprise-release".
+# You need to have a RPM which satisfy the dependency "pe-puppet-enterprise-release".
 
 set -o pipefail
 
@@ -71,8 +71,8 @@ pe-rubygem-sinatra.spec
 #
 # Havent gotten these to build yet. Drop me a line if you can build these.
 #
-# pe-memcached.spec
 # pe-rubycas-server.spec
+# pe-memcached.spec
 
 
 for i in $list
