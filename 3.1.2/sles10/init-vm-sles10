@@ -1,0 +1,95 @@
+#!/bin/bash 
+
+# initialise Vagrant vm to meet build requirements on SLES10.4
+#
+# RPM dies when doing a "statfs" on the Vagrant shared filesystems, so we need to copy everything into local filesystems and unmount the shared folders before starting
+
+base=`pwd`
+
+#
+# Change this section to reflect your local environment. You need the distro, sdk and the sled DVD/repo.
+#
+zypper sd 1
+zypper sd 1
+zypper sa nfs://ezszis5a.ez.edeka.net/install/sles10.4/x86_64 sles10.4
+zypper sa nfs://ezszis5a.ez.edeka.net/install/sles10.4/x86_64-sdk sles10.4-sdk
+zypper sa nfs://ezszis5a.ez.edeka.net//install/sled10.4-x86_64-1 sled10.4
+
+# sles10 has a problem with the /vagrant mounted filesystem. RPM operations wont work if its mounted.
+umount -fl /vagrant
+
+groupadd mockbuild
+useradd mockbuild
+
+# this package is needed to install all the pe-puppet packages
+rpm -ivh ../extra/lu-puppet-enterprise-release-1.0-20140320.noarch.rpm
+
+# This is the pe-java compiled for SLES 11
+rpm -vi ../extra/pe-java-1.7.0.19-3.pe.x86_64.rpm
+
+# Install all the source RPMs. Download and copy them into srpms/ beforehand.
+rpm -ivh srpms/*.src.rpm
+
+#
+# build requirements
+#
+
+zypper in -y db-devel openssl-devel readline-devel
+zypper in -y libxml2-devel curl-devel
+zypper in -y jpackage-utils ant ant-nodeps ant-junit xerces-j2 java-1_6_0-ibm-devel
+zypper in -y cups-devel giflib-devel
+zypper in -y freetype2-devel alsa-devel
+zypper in -y libapr1-devel libapr-util1-devel db-devel libexpat-devel libselinux-devel pcre-devel
+zypper in -y libxslt-devel pam-devel openldap2-devel mysql-devel
+
+
+#
+# I could not find the uuid-devel and libossp libraries anywhere on SLES 10 or SLED 10 DVDs, so I had to grab some binaries off SUSE's build service. The RPMs were meant for SLES11 but they seem to work on SLES10 too. If you find a better solution for this then please let me know.
+#
+# Download uuid-devel and related requirements from here:
+# https://build.opensuse.org/package/show/home:pronik:branches:server:database:postgresql/uuid
+#
+#   md5sum checksum                   filename
+#   ---------------                   --------
+#   2875eb8305a6f7e2f3979bf438b479bd  uuid-devel-1.6.2-48.1.x86_64.rpm
+#   d846e1ba56b4f57c84fb6c175fab9bc3  libossp-uuid_dce16-1.6.2-48.1.x86_64.rpm
+#   69096358e80cd233d70ce62e87bfbd73  libossp-uuid16-1.6.2-48.1.x86_64.rpm
+#   59ce9e8ca9d11120949a7bd06c3c9d5b  libossp-uuid++16-1.6.2-48.1.x86_64.rpm
+#
+
+cd ../extra
+rpm -ivh uuid-devel-1.6.2-48.1.x86_64.rpm libossp-uuid_dce16-1.6.2-48.1.x86_64.rpm libossp-uuid16-1.6.2-48.1.x86_64.rpm libossp-uuid++16-1.6.2-48.1.x86_64.rpm
+cd -
+
+# Hacks and tweaks to compile on SLES 10 which is not a supported platform for Puppet Enterprise.
+
+## build pe-ruby
+#
+#    - install autoconf 2.63 along
+#    - install m4-1.4.17 into /usr/local
+#    - remove build requirement of db43-devel, its named db-devel on SLES10
+#    - remove install requirement libopenssl0_9_8
+
+rpm -Uvh ../extra/autoconf-2.63-1.158.x86_64.rpm
+cd /tmp
+tar xzf ${base}/../extra/m4-1.4.17.tar.gz
+cd m4-1.4.17
+./configure --prefix=/usr/local && make && make install
+cd /usr/src/packages/SPECS
+sed -i -e 's/^BuildRequires: db43-devel/BuildRequires: db-devel/' pe-ruby.spec
+sed -i -e 's/^Requires:      libopenssl0_9_8/#Requires:      libopenssl0_9_8/' pe-ruby.spec
+
+## patch pe-facter.spec
+sed -i -e 's/^BuildRequires:  libselinux-devel/#BuildRequires:  libselinux-devel/' pe-augeas.spec
+
+## patch pe-puppet.spec (only needed if you need fixed UID+GID, else comment out)
+sed -i -e 's/useradd -r -g/useradd -r -u 31009 -g/' -e 's/groupadd -r /groupadd -r -g 50004 /' /usr/src/packages/SPECS/pe-puppet.spec
+
+## patch pe-ruby-ldap.spec
+sed -i -e 's/BuildRequires: libopenssl-devel/BuildRequires: openssl-devel/' /usr/src/packages/SPECS/pe-ruby-ldap.spec
+
+## patch pe-httpd.spec
+sed -i -e 's/^BuildRequires:  db43-devel/BuildRequires:  db-devel/' /usr/src/packages/SPECS/pe-httpd.spec
+
+cd $base
+
