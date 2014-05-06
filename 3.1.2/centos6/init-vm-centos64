@@ -1,0 +1,11 @@
+#!/bin/bash
+set -o pipefail
+
+groupadd mockbuild
+useradd -g mockbuild mockbuild
+
+rpm -ivh srpms/*.rpm
+rpm -ivh ../extra/lu-puppet-enterprise-release-1.0-20140320.noarch.rpm
+
+yum install -y rpm-build redhat-rpm-config libxml2-devel autoconf gdbm-devel db4-devel automake alsa-lib-devel cups-devel giflib-devel java-1.6.0-openjdk-devel libX11-devel libXrender-devel libXext-devel libXi-devel libXp-devel libXt-devel libXtst-devel libXinerama-devel redhat-lsb freetype-devel freetype libjpeg-devel libpng-devel libxslt xorg-x11-proto-devel jakarta-commons-logging ant ant-nodeps ant-junit xerces-j2 xml-commons-apis java-javadoc libxslt-devel openldap-devel mysql-devel
+ 
