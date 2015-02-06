@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# tested on CentOS 6.6
+# tested in RHEL 6.4
+
+set -o pipefail
+
+groupadd mockbuild
+useradd -g mockbuild mockbuild
+
+rpm -ivh srpms/*.rpm
+rpm -ivh ../extra/lu-puppet-enterprise-release-1.0-20140320.noarch.rpm
+
+cat rhel6.rpmmacros >> /root/.rpmmacros
+
+yum install -y rpm-build readline-devel libselinux-devel libxml2-devel
+yum install -y autoconf gdbm-devel db4-devel openssl-devel
+yum install -y dmidecode virt-what
+yum install -y automake alsa-lib-devel cups-devel giflib-devel java-1.6.0-openjdk-devel libX11-devel libXrender-devel libXext-devel libXi-devel libXp-devel libXt-devel libXtst-devel libXinerama-devel redhat-lsb freetype-devel freetype libjpeg-devel libpng-devel wget libxslt xorg-x11-proto-devel zip jakarta-commons-logging
+yum install -y gcc-c++ libxslt-devel openldap-devel mysql-devel
+
+
+# Workaround for Ruby bug 8384
+#   - Ruby, openssl EC problems (https://bugs.ruby-lang.org/issues/8384):
+
+cp ruby-1.9.3-EC_GROUP_new_curve_GF2m.patch /root/rpmbuild/SOURCES/ruby-1.9.3-EC_GROUP_new_curve_GF2m.patch
+cp pe-ruby.spec.with_EC_patch /root/rpmbuild/SPECS/pe-ruby.spec
+

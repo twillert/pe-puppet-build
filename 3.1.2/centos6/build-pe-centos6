@@ -31,9 +31,6 @@ pe-ruby-shadow.spec
 pe-puppet.spec
 pe-rubygem-deep-merge.spec
 pe-hiera.spec
-pe-java.spec
-pe-tanukiwrapper.spec
-pe-activemq.spec
 pe-libevent.spec
 pe-ruby-stomp.spec
 pe-mcollective.spec
@@ -57,6 +54,9 @@ pe-rubygem-trollop.spec
 pe-ruby-ldap.spec
 pe-ruby-mysql.spec
 pe-rubygem-fog.spec
+pe-java.spec
+pe-tanukiwrapper.spec
+pe-activemq.spec
 "
 for i in $list
 do
