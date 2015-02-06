@@ -5,6 +5,7 @@ Puppetlabs are providing source RPMs for those part of their Puppet Enterprise s
 ## Puppet Enterprise 3.1.2
 * SLES 11 - all packages needed for Puppetmaster, PuppetDB, Apache+Passenger and MCollective are working. 
 * SLES 10 - all packages needed for running Puppet agents are working.
+* RHEL 6 - all packages needed for running Puppet agents are working. (use directories named 'centos6')
 
 ## Building Instructions
 * Checkout into your build environment, change into the desired version+distro directory and read the instructions in README.md.
